@@ -1,96 +1,168 @@
-import { StatusBar } from "expo-status-bar";
-import { Image, ScrollView, View, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Image,
+  Text,
+  View,
+  ScrollView,
+  TextInput,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  fetchPopularMovies,
   fetchTopRatedMovies,
   fetchTrendingMovies,
   fetchUpcomingMovies,
 } from "../api/api";
-import { useEffect, useState } from "react";
 import TrendingMovie from "../components/trending-movie";
 import UpcomingMovie from "../components/upcoming-movie";
 import TopRatedMovie from "../components/top-rated-movie";
+import PopularMovie from "../components/popular-movie";
+import MovieCard from "../components/movie-card";
+import { XMarkIcon, MagnifyingGlassIcon } from "react-native-heroicons/outline";
+import { StatusBar } from "expo-status-bar";
 
-const dummyMovies = [
-  {
-    id: 1,
-    title: "Inception",
-    poster: "https://image.tmdb.org/t/p/w500//qmDpIHrmpJINaRKAfWQfftjCdyi.jpg",
-  },
-  {
-    id: 2,
-    title: "Interstellar",
-    poster: "https://image.tmdb.org/t/p/w500//gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-  },
-  {
-    id: 3,
-    title: "The Dark Knight",
-    poster: "https://image.tmdb.org/t/p/w500//1hRoyzDtpgMU7Dz4JF22RANzQO7.jpg",
-  },
-];
+const { width } = Dimensions.get("window");
 
-const Home = () => {
+export default function Home() {
   const [trendingMovies, setTrendingMovies] = useState([]);
   const [upComing, setUpComing] = useState([]);
   const [topRated, setTopRated] = useState([]);
+  const [popular, setPopular] = useState([]);
+  const [query, setQuery] = useState("");
+  const [filtered, setFiltered] = useState([]);
 
-  const getTrendingMovies = async () => {
-    const data = await fetchTrendingMovies();
-    if (data && data.results) {
-      setTrendingMovies(data.results);
-    } else {
-      console.error("Failed to fetch trending movies:", data);
-    }
-  };
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  const getUpcomingMovies = async () => {
-    const data = await fetchUpcomingMovies();
-    if (data && data.results) {
-      setUpComing(data.results);
-    } else {
-      console.error("Failed to fetch upcoming movies:", data);
-    }
-  };
-
-  const getTopRatedMovies = async () => {
-    const data = await fetchTopRatedMovies();
-    if (data && data.results) {
-      setTopRated(data.results);
-    } else {
-      console.error("Failed to fetch top-rated movies:", data);
-    }
-  };
-
-  // Call the function to fetch trending movies when the component mounts
   useEffect(() => {
-    getTrendingMovies();
-    getUpcomingMovies();
-    getTopRatedMovies();
+    getAllMovies();
   }, []);
+
+  const getAllMovies = async () => {
+    const [t, u, p, r] = await Promise.all([
+      fetchTrendingMovies(),
+      fetchUpcomingMovies(),
+      fetchPopularMovies(),
+      fetchTopRatedMovies(),
+    ]);
+
+    if (t?.results) setTrendingMovies(t.results);
+    if (u?.results) setUpComing(u.results);
+    if (p?.results) setPopular(p.results);
+    if (r?.results) setTopRated(r.results);
+  };
+
+  // 🔍 Real-time search
+  useEffect(() => {
+    if (query.trim().length === 0) {
+      setFiltered([]);
+      return;
+    }
+
+    const allMovies = [...trendingMovies, ...upComing, ...popular, ...topRated];
+
+    const filteredResults = allMovies.filter((movie) =>
+      movie.title.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setFiltered(filteredResults);
+  }, [query]);
+
+  const headerScale = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.8],
+    extrapolate: "clamp",
+  });
+
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, -10],
+    extrapolate: "clamp",
+  });
 
   return (
     <View className="flex-1 bg-slate-900">
-      <SafeAreaView>
-        <StatusBar style="light" />
-        <View className="flex flex-row items-center justify-between p-4">
-          <Image source={require("../../assets/logo.png")} />
-          <MagnifyingGlassIcon size={30} strokeWidth={2} color={"white"} />
-        </View>
-      </SafeAreaView>
+      <StatusBar style="light" backgroundColor="#020617" translucent={false} />
+      <SafeAreaView className="flex-1">
+        {/* 🔍 Search Header */}
+        <Animated.View
+          style={{
+            transform: [
+              { scale: headerScale },
+              { translateY: headerTranslateY },
+            ],
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 8,
+            zIndex: 10,
+          }}
+        >
+          <View className="flex-row items-center space-x-2 bg-zinc-800 rounded-xl px-4 py-2">
+            <MagnifyingGlassIcon color="white" size={20} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search movies..."
+              placeholderTextColor="#ccc"
+              className="flex-1 text-white"
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => setQuery("")}>
+                <XMarkIcon color="white" size={20} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </Animated.View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        {trendingMovies?.length > 0 && (
-          <TrendingMovie trendingMovies={trendingMovies} />
-        )}
-        {upComing?.length > 0 && <UpcomingMovie />}
-        {topRated?.length > 0 && <TopRatedMovie />}
-      </ScrollView>
+        {/* 🔽 Main ScrollView */}
+        <Animated.ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )}
+          scrollEventThrottle={16}
+        >
+          {query.length > 0 && filtered.length > 0 && (
+            <View className="mt-4 px-4 space-y-4">
+              <Text className="text-white text-lg font-bold">
+                🔍 Results for: <Text className="text-red-400">{query}</Text>
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {filtered.map((movie, idx) => (
+                  <View key={idx} className="mr-4">
+                    <MovieCard movie={movie} />
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* 🔽 Show default sections if not searching */}
+          {query.length === 0 && (
+            <>
+              {trendingMovies.length > 0 && (
+                <TrendingMovie trendingMovies={trendingMovies} />
+              )}
+              {upComing.length > 0 && (
+                <UpcomingMovie
+                  upcomingMovies={upComing}
+                  title="Upcoming Movies"
+                />
+              )}
+              {popular.length > 0 && (
+                <PopularMovie popular={popular} title="Popular Movies" />
+              )}
+              {topRated.length > 0 && (
+                <TopRatedMovie topRated={topRated} title="Top Rated Movies" />
+              )}
+            </>
+          )}
+        </Animated.ScrollView>
+      </SafeAreaView>
     </View>
   );
-};
-
-export default Home;
+}

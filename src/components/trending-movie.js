@@ -1,28 +1,28 @@
-import { View, Text, FlatList, Dimensions } from "react-native";
+import { View, Text, Dimensions } from "react-native";
+import { CarouselMomentum } from "react-native-momentum-carousel";
 import MovieCard from "./movie-card";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 export default function TrendingMovie({ trendingMovies }) {
+  const renderItem = ({ item }) => <MovieCard movie={item} />;
+
   return (
     <View className="mb-5">
-      <Text className="text-white text-xl font-bold mx-4 mb-5">
-        Trending Movies
-      </Text>
-
-      <FlatList
-        horizontal
+      <CarouselMomentum
         data={trendingMovies}
+        sliderWidth={width}
+        itemWidth={width * 0.5}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={width * 0.7 + 16}
-        decelerationRate="fast"
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-        renderItem={({ item }) => (
-          <View className="mr-4 w-[280px]">
-            <MovieCard movie={item} />
-          </View>
-        )}
+        onSnap={() => {}}
+        autoPlay={true}
+        autoPlayInterval={5000}
+        loop={true}
+        inactiveScale={0.8}
+        showPagination={false}
+        animation="Stack"
+        customAnimation={false}
       />
     </View>
   );
