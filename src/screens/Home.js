@@ -15,6 +15,7 @@ import {
   fetchTopRatedMovies,
   fetchTrendingMovies,
   fetchUpcomingMovies,
+  searchMovies,
 } from "../api/api";
 import TrendingMovie from "../components/trending-movie";
 import UpcomingMovie from "../components/upcoming-movie";
@@ -47,27 +48,24 @@ export default function Home() {
       fetchPopularMovies(),
       fetchTopRatedMovies(),
     ]);
-
     if (t?.results) setTrendingMovies(t.results);
     if (u?.results) setUpComing(u.results);
     if (p?.results) setPopular(p.results);
     if (r?.results) setTopRated(r.results);
   };
 
-  // 🔍 Real-time search
+  // 🔍 API orqali qidiruv
   useEffect(() => {
-    if (query.trim().length === 0) {
-      setFiltered([]);
-      return;
-    }
+    const searchFromAPI = async () => {
+      if (query.trim().length === 0) {
+        setFiltered([]);
+        return;
+      }
+      const res = await searchMovies(query);
+      if (res?.results) setFiltered(res.results);
+    };
 
-    const allMovies = [...trendingMovies, ...upComing, ...popular, ...topRated];
-
-    const filteredResults = allMovies.filter((movie) =>
-      movie.title.toLowerCase().includes(query.toLowerCase())
-    );
-
-    setFiltered(filteredResults);
+    searchFromAPI();
   }, [query]);
 
   const headerScale = scrollY.interpolate({
@@ -86,7 +84,6 @@ export default function Home() {
     <View className="flex-1 bg-slate-900">
       <StatusBar style="light" backgroundColor="#020617" translucent={false} />
       <SafeAreaView className="flex-1">
-        {/* 🔍 Search Header */}
         <Animated.View
           style={{
             transform: [
@@ -116,7 +113,6 @@ export default function Home() {
           </View>
         </Animated.View>
 
-        {/* 🔽 Main ScrollView */}
         <Animated.ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
@@ -141,7 +137,7 @@ export default function Home() {
             </View>
           )}
 
-          {/* 🔽 Show default sections if not searching */}
+          {/* Asl bo‘limlar */}
           {query.length === 0 && (
             <>
               {trendingMovies.length > 0 && (

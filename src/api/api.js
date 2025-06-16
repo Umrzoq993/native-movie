@@ -1,27 +1,50 @@
-import { api_key } from "../constants/constants";
-import { apiRequest } from "./axios";
+import { api_key, token } from "../constants/constants";
 
 export const base_url = "https://api.themoviedb.org/3";
 
-const trendingMovies = `${base_url}/trending/movie/day?api_key=${api_key}`;
-const upComingMovies = `${base_url}/movie/upcoming?api_key=${api_key}`;
-const topRatedMovies = `${base_url}/movie/top_rated?api_key=${api_key}`;
-const popularMovies = `${base_url}/movie/popular?api_key=${api_key}`;
-
 export const fetchTrendingMovies = () => {
-  return apiRequest(trendingMovies);
+  return fetch(`${base_url}/trending/movie/day?api_key=${api_key}`).then(
+    (res) => res.json()
+  );
 };
 
 export const fetchUpcomingMovies = () => {
-  return apiRequest(upComingMovies);
+  return fetch(`${base_url}/movie/upcoming?api_key=${api_key}`).then((res) =>
+    res.json()
+  );
 };
 
 export const fetchTopRatedMovies = () => {
-  return apiRequest(topRatedMovies);
+  return fetch(`${base_url}/movie/top_rated?api_key=${api_key}`).then((res) =>
+    res.json()
+  );
 };
 
 export const fetchPopularMovies = () => {
-  return apiRequest(popularMovies);
+  return fetch(`${base_url}/movie/popular?api_key=${api_key}`).then((res) =>
+    res.json()
+  );
+};
+
+export const searchMovies = async (query) => {
+  try {
+    const response = await fetch(
+      `${base_url}/search/movie?query=${encodeURIComponent(
+        query
+      )}&include_adult=false&language=en-US&page=1`,
+      {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return await response.json();
+  } catch (error) {
+    console.error("Search error:", error);
+    return { results: [] };
+  }
 };
 
 export const image500 = (posterPath) => {

@@ -1,1 +1,3 @@
 export const api_key = "4215a6fca8deee7df40f9e24563a9e99";
+export const token =
+  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0MjE1YTZmY2E4ZGVlZTdkZjQwZjllMjQ1NjNhOWU5OSIsIm5iZiI6MTc0OTgzOTMwNy42NjcsInN1YiI6IjY4NGM2ZGNiNGRiMmVjYWRiZDFiZTlkMiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.PAhSb1E4xnlCE1o_MkmV7xonbWB9p89-ZV97o0-NjKk";
