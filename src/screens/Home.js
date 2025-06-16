@@ -12,6 +12,24 @@ import TrendingMovie from "../components/trending-movie";
 import UpcomingMovie from "../components/upcoming-movie";
 import TopRatedMovie from "../components/top-rated-movie";
 
+const dummyMovies = [
+  {
+    id: 1,
+    title: "Inception",
+    poster: "https://image.tmdb.org/t/p/w500//qmDpIHrmpJINaRKAfWQfftjCdyi.jpg",
+  },
+  {
+    id: 2,
+    title: "Interstellar",
+    poster: "https://image.tmdb.org/t/p/w500//gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+  },
+  {
+    id: 3,
+    title: "The Dark Knight",
+    poster: "https://image.tmdb.org/t/p/w500//1hRoyzDtpgMU7Dz4JF22RANzQO7.jpg",
+  },
+];
+
 const Home = () => {
   const [trendingMovies, setTrendingMovies] = useState([]);
   const [upComing, setUpComing] = useState([]);

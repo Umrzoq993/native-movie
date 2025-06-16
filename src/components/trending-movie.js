@@ -1,5 +1,4 @@
-import { View, Text, Dimensions } from "react-native";
-import Carousel from "react-native-reanimated-carousel";
+import { View, Text, FlatList, Dimensions } from "react-native";
 import MovieCard from "./movie-card";
 
 const { width } = Dimensions.get("window");
@@ -7,17 +6,23 @@ const { width } = Dimensions.get("window");
 export default function TrendingMovie({ trendingMovies }) {
   return (
     <View className="mb-5">
-      <Text className="text-white text-xl mx-4 mb-5">Trending Movies</Text>
-      <Carousel
-        width={width * 0.7}
-        height={300}
+      <Text className="text-white text-xl font-bold mx-4 mb-5">
+        Trending Movies
+      </Text>
+
+      <FlatList
+        horizontal
         data={trendingMovies}
-        mode="parallax"
-        modeConfig={{
-          parallaxScrollingScale: 0.9,
-          parallaxScrollingOffset: 50,
-        }}
-        renderItem={({ item }) => <MovieCard movie={item} />}
+        keyExtractor={(item) => item.id.toString()}
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={width * 0.7 + 16}
+        decelerationRate="fast"
+        contentContainerStyle={{ paddingHorizontal: 16 }}
+        renderItem={({ item }) => (
+          <View className="mr-4 w-[280px]">
+            <MovieCard movie={item} />
+          </View>
+        )}
       />
     </View>
   );
